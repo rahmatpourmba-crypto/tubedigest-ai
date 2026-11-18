@@ -1,19 +1,134 @@
-// TubeDigest AI - YouTube Content Script 4.0 (Zero-Leak Video Isolation & Ultra-Contrast)
-console.log('%c[TubeDigest AI] 4.0 Ultra-Premium Design System Active', 'color: #ff0055; font-weight: 900;');
+// TubeDigest AI - YouTube Content Script 4.0 (Full i18n & Direct USDT Gateway)
+console.log('%c[TubeDigest AI] 4.0 Active with Full Multi-Language System', 'color: #ff0055; font-weight: 900;');
 
-// Sanitized API key fallback for public repository (reads from chrome.storage.local)
 const HARDCODED_KEY = '';
 let currentVideoId = null;
 let currentSessionId = 0;
 let selectedLanguage = 'fa'; // Default Persian
 const videoCache = new Map(); // Key: `${videoId}_${lang}`, Value: summaryData
 
+// Full Multi-Language Dictionary (i18n)
+const I18N = {
+    fa: {
+        btnLabel: '✨ AI خلاصه هوشمند',
+        appTitle: '✨ دستیار هوشمند تحلیل محتوا | TubeDigest AI',
+        loadingText: 'موتور هوشمند TubeDigest در حال پردازش شناختی، واکاوی عمیق و تدوین خلاصه اجرایی...',
+        closeTitle: 'بستن',
+        freeBannerTitle: '🎁 شما در حال استفاده از پلن آزمایشی هستید',
+        freeBannerRemaining: 'باقی‌مانده: {n} از ۳ خلاصه رایگان',
+        paywallTitle: 'سقف استفاده رایگان به پایان رسید',
+        paywallDesc: 'شما از هر <b>۳ فرصت رایگان</b> خود استفاده نموده‌اید. برای تحلیل هوشمند، نامحدود و دسترسی همیشگی به تمامی ویدیوها، لایسنس <b>TubeDigest Pro</b> را فعال فرمایید.',
+        features: [
+            '✔ تحلیل نامحدود و بدون سقف روزانه',
+            '✔ استخراج عمیق پیام نهایی (The Big Takeaway)',
+            '✔ نشانه‌گذاری زمانی تعاملی و پرش به ویدیو',
+            '✔ فعال‌سازی مادام‌العمر و بدون اشتراک ماهانه'
+        ],
+        depositBoxTitle: '👑 واریز مستقیم ۴.۹۹ تتر (USDT)',
+        depositNetwork: 'TRON (TRC-20)',
+        depositStep1: '<b>گام اول:</b> مبلغ <b>4.99 USDT</b> را با اسکن کیوآرکد بالا یا به آدرس زیر در شبکه <b>TRC-20</b> واریز فرمایید.',
+        depositStep2: '<b>گام دوم:</b> پس از واریز در کیف‌پول خود (تراست‌ولت، صرافی و...)، کد پیگیری یا <b>شناسه تراکنش (TxID)</b> را کپی کنید.',
+        depositStep3: '<b>گام سوم:</b> ایمیل و شناسه TxID را در کادر زیر وارد کرده و دکمه تایید را بزنید تا لایسنس شما <b>آنی فعال شود</b>.',
+        copyWalletBtn: '📋 کپی آدرس',
+        copiedWalletBtn: '✅ کپی شد!',
+        activationTitle: 'فرم تایید و فعالسازی آنی لایسنس:',
+        emailPlaceholder: 'ایمیل شما (مثال: user@gmail.com)',
+        keyPlaceholder: 'شناسه تراکنش TxID یا کد لایسنس',
+        activateSubmitBtn: '✨ تایید و فعالسازی آنی',
+        activateLoading: 'در حال بررسی...',
+        secConclusion: '👑 پیام نهایی و مغز کلام ویدیو (THE BIG TAKEAWAY)',
+        secTakeaway: '⚡ خلاصه فشرده و اجرایی ۳۰ ثانیه‌ای',
+        secHighlights: '📌 مهم‌ترین نکات کلیدی و استدلال‌های مطرح‌شده گوینده',
+        secLessons: '💡 درس‌ها و پیام‌های کاربردی برای بیننده',
+        secTimeline: '⏱️ نشانه‌گذاری‌های زمانی و مباحث مطرح‌شده (پرش با کلیک)',
+        copySummaryBtn: '📋 کپی خلاصه محتوی ویدیو',
+        copiedSummaryBtn: '✅ با موفقیت کپی شد!',
+        upgradeLink: '👑 ارتقا به نسخه Pro نامحدود با تتر ↗',
+        errAi: '⚠️ خطا در دریافت پاسخ از هسته تحلیلی: {err}. لطفاً فیلترشکن خود را بررسی کرده و مجدداً تلاش فرمایید.'
+    },
+    en: {
+        btnLabel: '✨ AI Smart Digest',
+        appTitle: '✨ Cognitive Content Analysis | TubeDigest AI',
+        loadingText: 'TubeDigest Neural Engine is synthesizing insights and extracting core takeaways...',
+        closeTitle: 'Close',
+        freeBannerTitle: '🎁 Free Trial Mode Active',
+        freeBannerRemaining: 'Remaining: {n} of 3 free summaries',
+        paywallTitle: 'Free Summary Limit Reached',
+        paywallDesc: 'You have used all <b>3 free video summaries</b>. To unlock unlimited, high-speed executive analyses for all YouTube videos, activate <b>TubeDigest Pro</b>.',
+        features: [
+            '✔ Unlimited video summaries without daily caps',
+            '✔ Deep extraction of The Big Takeaway & thesis',
+            '✔ Interactive chapter seek timestamps',
+            '✔ Lifetime license with zero recurring fees'
+        ],
+        depositBoxTitle: '👑 Direct Instant Deposit: 4.99 USDT',
+        depositNetwork: 'TRON (TRC-20)',
+        depositStep1: '<b>Step 1:</b> Send <b>4.99 USDT</b> via <b>TRON (TRC-20)</b> network by scanning the QR code or copying the address below.',
+        depositStep2: '<b>Step 2:</b> After transferring in your wallet (Trust Wallet, Binance, etc.), copy your <b>Transaction Hash / TxID</b>.',
+        depositStep3: '<b>Step 3:</b> Enter your email and TxID below, then click Verify to unlock your lifetime Pro license <b>instantly</b>!',
+        copyWalletBtn: '📋 Copy Address',
+        copiedWalletBtn: '✅ Copied!',
+        activationTitle: 'Instant License Verification & Activation Form:',
+        emailPlaceholder: 'Your Email (e.g. user@gmail.com)',
+        keyPlaceholder: 'Transaction Hash (TxID) or License Key',
+        activateSubmitBtn: '✨ Verify & Activate Now',
+        activateLoading: 'Verifying...',
+        secConclusion: '👑 Core Thesis & Grand Conclusion (THE BIG TAKEAWAY)',
+        secTakeaway: '⚡ 30-Second Executive Brief',
+        secHighlights: '📌 Key Arguments, Facts & Turning Points',
+        secLessons: '💡 Actionable Lessons & Strategic Takeaways',
+        secTimeline: '⏱️ Interactive Chapters & Timestamps (Click to Seek)',
+        copySummaryBtn: '📋 Copy Video Summary & Content',
+        copiedSummaryBtn: '✅ Copied to clipboard!',
+        upgradeLink: '👑 Upgrade to Unlimited Pro with USDT ↗',
+        errAi: '⚠️ Error receiving response from cognitive engine: {err}. Please check your connection and try again.'
+    },
+    ar: {
+        btnLabel: '✨ AI الملخص الذكي',
+        appTitle: '✨ التحليل المعرفي للمحتوى | TubeDigest AI',
+        loadingText: 'محرك TubeDigest الذكي يقوم بالتحليل المعمق واستخراج خلاصة الفيديو التنفيذية...',
+        closeTitle: 'إغلاق',
+        freeBannerTitle: '🎁 أنت تستخدم الباقة التجريبية المجانية',
+        freeBannerRemaining: 'المتبقي: {n} من ٣ ملخصات مجانية',
+        paywallTitle: 'تم استنفاد الحد المجاني للملخصات',
+        paywallDesc: 'لقد استنفدت جميع <b>الملخصات المجانية الـ٣</b>. لفتح التحليلات الذكية غير المحدودة لجميع مقاطع يوتيوب، قم بتفعيل باقة <b>TubeDigest Pro</b> مدى الحياة.',
+        features: [
+            '✔ تحليلات غير محدودة بدون سقف يومي',
+            '✔ استخراج معمق للفكرة الجوهرية (The Big Takeaway)',
+            '✔ فصول زمنية تفاعلية للانتقال الفوري في الفيديو',
+            '✔ ترخيص دائم مدى الحياة دون أي اشتراكات دورية'
+        ],
+        depositBoxTitle: '👑 إيداع مباشر بقيمة 4.99 تيثر (USDT)',
+        depositNetwork: 'TRON (TRC-20)',
+        depositStep1: '<b>الخطوة ١:</b> أرسل مبلغ <b>4.99 USDT</b> عبر شبكة <b>TRON (TRC-20)</b> بمسح رمز الاستجابة السريعة أعلاه أو نسخ العنوان أدناه.',
+        depositStep2: '<b>الخطوة ٢:</b> بعد التحويل من محفظتك (Trust Wallet أو أي منصة)، انسخ <b>معرّف المعاملة (TxID / Hash)</b>.',
+        depositStep3: '<b>الخطوة ٣:</b> أدخل بريدك الإلكتروني ومعرّف TxID في الحقل أدناه واضغط على تفعيل لفتح باقة Pro <b>فورياً</b>!',
+        copyWalletBtn: '📋 نسخ العنوان',
+        copiedWalletBtn: '✅ تم النسخ!',
+        activationTitle: 'نموذج التحقق والتفعيل الفوري للترخيص:',
+        emailPlaceholder: 'بريدك الإلكتروني (مثال: user@gmail.com)',
+        keyPlaceholder: 'معرّف المعاملة (TxID) أو رمز الترخيص',
+        activateSubmitBtn: '✨ التحقق والتفعيل الفوري',
+        activateLoading: 'جارٍ التحقق...',
+        secConclusion: '👑 الفكرة الجوهرية والخلاصة النهائية (THE BIG TAKEAWAY)',
+        secTakeaway: '⚡ ملخص تنفيذي مكثف في ٣٠ ثانية',
+        secHighlights: '📌 أهم النقاط المحورية والحجج المطروحة في الفيديو',
+        secLessons: '💡 الدروس التطبيقية والنصائح العملية للمشاهد',
+        secTimeline: '⏱️ الفصول الزمنية التفاعلية (انقر للانتقال)',
+        copySummaryBtn: '📋 نسخ ملخص ومحتوى الفيديو',
+        copiedSummaryBtn: '✅ تم النسخ بنجاح!',
+        upgradeLink: '👑 الترقية إلى باقة Pro غير المحدودة عبر تيثر ↗',
+        errAi: '⚠️ خطأ في تلقي الرد من المحرك الذكي: {err}. يرجى التحقق من الاتصال والمحاولة مجدداً.'
+    }
+};
+
+function getT() {
+    return I18N[selectedLanguage] || I18N.fa;
+}
+
 // Initialize settings from storage
 chrome.storage.local.get(['tubedigest_lang', 'gemini_api_key'], (res) => {
     if (res.tubedigest_lang) selectedLanguage = res.tubedigest_lang;
-    if (!res.gemini_api_key) {
-        chrome.storage.local.set({ gemini_api_key: HARDCODED_KEY });
-    }
 });
 
 chrome.storage.onChanged.addListener((changes, area) => {
@@ -32,7 +147,6 @@ window.addEventListener('yt-page-data-updated', handleVideoNavigation);
 window.addEventListener('DOMContentLoaded', init);
 window.addEventListener('load', init);
 
-// Continuous safeguard check for button injection and video ID sync
 setInterval(() => {
     if (window.location.pathname.startsWith('/watch')) {
         const urlParams = new URLSearchParams(window.location.search);
@@ -55,7 +169,7 @@ function handleVideoNavigation() {
 
     if (newVideoId && newVideoId !== currentVideoId) {
         currentVideoId = newVideoId;
-        currentSessionId++; // Invalidate any pending requests from the previous video
+        currentSessionId++; // Invalidate pending requests from the old video
         removeExistingPanel();
     }
     ensureButtonExists();
@@ -82,6 +196,7 @@ function ensureButtonExists() {
 function injectButton(container, isOwner) {
     if (document.getElementById('tubedigest-action-btn')) return;
 
+    const t = getT();
     const btn = document.createElement('button');
     btn.id = 'tubedigest-action-btn';
     btn.className = 'tubedigest-btn';
@@ -89,7 +204,7 @@ function injectButton(container, isOwner) {
         <svg viewBox="0 0 24 24">
             <path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z"></path>
         </svg>
-        <span>✨ AI خلاصه هوشمند</span>
+        <span id="td-main-btn-text">${t.btnLabel}</span>
     `;
 
     btn.addEventListener('click', (e) => {
@@ -101,7 +216,7 @@ function injectButton(container, isOwner) {
     const langBtn = document.createElement('button');
     langBtn.id = 'tubedigest-lang-toggle-btn';
     langBtn.className = 'tubedigest-lang-pill-btn';
-    langBtn.title = 'تغییر زبان خلاصه';
+    langBtn.title = 'Language / تغییر زبان';
     langBtn.innerHTML = `🌐 <span id="td-lang-label">${getLangName(selectedLanguage)}</span> ▾`;
 
     langBtn.addEventListener('click', (e) => {
@@ -128,13 +243,16 @@ function injectButton(container, isOwner) {
 }
 
 function getLangName(code) {
-    const map = { fa: 'فارسی', en: 'English', ar: 'العربية', tr: 'Türkçe', de: 'Deutsch', es: 'Español' };
+    const map = { fa: 'فارسی', en: 'English', ar: 'العربية' };
     return map[code] || 'فارسی';
 }
 
 function updateLangButtonLabel() {
     const label = document.getElementById('td-lang-label');
     if (label) label.innerText = getLangName(selectedLanguage);
+
+    const btnText = document.getElementById('td-main-btn-text');
+    if (btnText) btnText.innerText = getT().btnLabel;
 }
 
 function cycleNextLanguage() {
@@ -160,7 +278,7 @@ function removeExistingPanel() {
     if (p) p.remove();
 }
 
-// Unique Hardware & Browser Fingerprint Generator (HWID)
+// Unique Hardware Fingerprint Generator (HWID)
 async function getOrCreateHWID() {
     return new Promise((resolve) => {
         chrome.storage.local.get(['tubedigest_hwid'], (res) => {
@@ -199,7 +317,6 @@ async function extractCurrentVideoData() {
     const urlParams = new URLSearchParams(window.location.search);
     const videoId = urlParams.get('v') || currentVideoId;
 
-    // Accurate title extraction
     let title = '';
     const titleEl = document.querySelector('h1.ytd-watch-metadata yt-formatted-string') ||
                     document.querySelector('h1.ytd-watch-metadata') || 
@@ -210,19 +327,16 @@ async function extractCurrentVideoData() {
         title = document.title.replace(' - YouTube', '').trim();
     }
 
-    // Channel name
     const channelEl = document.querySelector('#owner #channel-name a') || 
                       document.querySelector('#channel-name');
     const channelName = channelEl ? channelEl.innerText.trim() : '';
 
-    // Description extraction
     const descEl = document.querySelector('#description-inline-expander') || 
                    document.querySelector('#description yt-formatted-string') ||
                    document.querySelector('#description') || 
                    document.querySelector('ytd-text-inline-expander');
     let textBody = descEl ? descEl.innerText.trim() : '';
 
-    // If YouTube native transcript is open on screen, extract cues
     try {
         const transcriptCues = document.querySelectorAll('ytd-transcript-segment-renderer');
         if (transcriptCues.length > 0) {
@@ -232,7 +346,7 @@ async function extractCurrentVideoData() {
                 if (txt) lines.push(txt);
             });
             if (lines.length > 0) {
-                textBody = 'متن صحبت‌های استخراج‌شده از زیرنویس ویدیو:\n' + lines.join(' ') + '\n\n' + textBody;
+                textBody = 'Subtitles / Transcript:\n' + lines.join(' ') + '\n\n' + textBody;
             }
         }
     } catch (e) {}
@@ -258,28 +372,17 @@ async function createAndShowPanel() {
 
     const apiKey = storage.gemini_api_key || HARDCODED_KEY;
     const isRtl = selectedLanguage === 'fa' || selectedLanguage === 'ar';
+    const t = getT();
 
     const panel = document.createElement('div');
     panel.id = 'tubedigest-panel';
     panel.className = isRtl ? 'rtl' : 'ltr';
     panel.dir = isRtl ? 'rtl' : 'ltr';
 
-    const loadingText = selectedLanguage === 'fa' 
-        ? 'موتور هوشمند TubeDigest در حال پردازش شناختی، واکاوی عمیق و تدوین خلاصه اجرایی...'
-        : (selectedLanguage === 'ar' 
-            ? 'محرك TubeDigest الذكي يقوم بالتحليل العميق واستخراج خلاصة الفيديو التنفيذية...'
-            : 'TubeDigest Neural Engine is synthesizing insights and extracting core takeaways...');
-
-    const titleText = selectedLanguage === 'fa'
-        ? '✨ دستیار هوشمند تحلیل محتوا | TubeDigest AI'
-        : (selectedLanguage === 'ar'
-            ? '✨ المساعد المتقدم لتحليل المحتوى | TubeDigest AI'
-            : '✨ Executive Content Analysis | TubeDigest AI');
-
     panel.innerHTML = `
         <div class="tubedigest-header">
             <div class="tubedigest-title-group">
-                <span class="tubedigest-title">${titleText}</span>
+                <span class="tubedigest-title">${t.appTitle}</span>
                 <span class="tubedigest-badge">AI Neural Core 4.0</span>
             </div>
 
@@ -291,14 +394,14 @@ async function createAndShowPanel() {
             </div>
 
             <div class="tubedigest-actions">
-                <button class="tubedigest-tool-btn" id="td-close-btn" title="بستن">✕</button>
+                <button class="tubedigest-tool-btn" id="td-close-btn" title="${t.closeTitle}">✕</button>
             </div>
         </div>
 
         <div id="td-content-area">
             <div style="display:flex; align-items:center; gap:18px; color:#ffffff; padding: 36px 12px; font-size: 17px; font-weight:800;">
                 <div style="width:32px; height:32px; border:4px solid #8b5cf6; border-top-color:#ff0055; border-radius:50%; animation:tubePulse 1s linear infinite; box-shadow: 0 0 20px rgba(139, 92, 246, 0.7);"></div>
-                <span>${loadingText}</span>
+                <span>${t.loadingText}</span>
             </div>
         </div>
     `;
@@ -343,8 +446,8 @@ async function createAndShowPanel() {
         const remaining = Math.max(0, 3 - freeCount);
         contentArea.insertAdjacentHTML('afterbegin', `
             <div class="tubedigest-free-usage-banner" id="td-free-banner">
-                <span>🎁 شما در حال استفاده از پلن آزمایشی هستید</span>
-                <span class="td-count-pill">باقی‌مانده: ${remaining} از ۳ خلاصه رایگان</span>
+                <span>${t.freeBannerTitle}</span>
+                <span class="td-count-pill">${t.freeBannerRemaining.replace('{n}', remaining)}</span>
             </div>
         `);
     }
@@ -361,7 +464,6 @@ async function createAndShowPanel() {
         lang: selectedLanguage,
         apiKey: apiKey
     }, (response) => {
-        // Validate session and video ID to avoid race conditions
         const currentUrlV = new URLSearchParams(window.location.search).get('v');
         if (thisSessionId !== currentSessionId || currentUrlV !== thisVideoId) {
             console.log('[TubeDigest AI] Ignored outdated response for video:', thisVideoId);
@@ -371,19 +473,16 @@ async function createAndShowPanel() {
         if (!response || !response.success) {
             contentArea.innerHTML = `
                 <div style="background: rgba(239, 68, 68, 0.15); border: 2px solid #ef4444; border-radius: 16px; padding: 22px; color: #fecaca; font-size: 16px; line-height: 2;">
-                    ⚠️ خطا در دریافت پاسخ از هسته تحلیلی: ${response ? response.error : 'عدم پاسخ‌دهی سرور'}.
-                    <br>لطفاً فیلترشکن خود را بررسی کرده و مجدداً دکمه «خلاصه هوشمند» را لمس فرمایید.
+                    ${t.errAi.replace('{err}', response ? response.error : 'Network Timeout')}
                 </div>
             `;
             return;
         }
 
-        // Increment free usage counter if not pro
         if (!isPro) {
             chrome.storage.local.set({ tubedigest_free_count: freeCount + 1 });
         }
 
-        // Cache valid result for this video
         videoCache.set(cacheKey, response.data);
         renderGeminiResult(contentArea, response.data, isPro, freeCount + 1);
     });
@@ -391,74 +490,80 @@ async function createAndShowPanel() {
 
 function renderPaywallLock(container, count, hwid) {
     const isRtl = selectedLanguage === 'fa' || selectedLanguage === 'ar';
+    const t = getT();
 
     container.innerHTML = `
         <div class="tubedigest-paywall-card">
             <div class="tubedigest-paywall-icon">🔒</div>
             <div class="tubedigest-paywall-title">
-                ${isRtl ? 'سقف استفاده رایگان به پایان رسید' : 'Free Summary Limit Reached'}
+                ${t.paywallTitle}
             </div>
             <div class="tubedigest-paywall-desc">
-                ${isRtl 
-                    ? 'شما از هر <b>۳ فرصت رایگان</b> خود استفاده نموده‌اید. برای تحلیل هوشمند، نامحدود و دسترسی مادام‌العمر به تمامی ویدیوهای یوتیوب، لایسنس <b>TubeDigest Pro</b> را فعال فرمایید.' 
-                    : 'You have used all <b>3 free summaries</b>. To unlock unlimited executive video analyses with zero restrictions, upgrade to <b>TubeDigest Pro</b>.'}
+                ${t.paywallDesc}
             </div>
 
             <div class="tubedigest-paywall-features">
-                <div class="tubedigest-paywall-feature-item">✔ تحلیل نامحدود و بدون سقف روزانه</div>
-                <div class="tubedigest-paywall-feature-item">✔ استخراج عمیق پیام نهایی (The Big Takeaway)</div>
-                <div class="tubedigest-paywall-feature-item">✔ نشانه‌گذاری زمانی تعاملی و پرش به ویدیو</div>
-                <div class="tubedigest-paywall-feature-item">✔ فعال‌سازی دائمی و بدون اشتراک ماهانه</div>
+                ${t.features.map(f => `<div class="tubedigest-paywall-feature-item">${f}</div>`).join('')}
             </div>
 
-            <!-- Direct USDT Gateway Box -->
+            <!-- Direct USDT Gateway Box with Step-by-Step Guide -->
             <div class="tubedigest-direct-pay-box">
                 <div style="display:flex; align-items:center; justify-content:space-between; width:100%; border-bottom:1px solid rgba(255,255,255,0.1); padding-bottom:10px;">
-                    <span style="font-weight:900; color:#fbbf24; font-size:15px;">👑 واریز مستقیم ۴.۹۹ تتر (USDT)</span>
-                    <span class="tubedigest-net-badge">TRON (TRC-20)</span>
+                    <span style="font-weight:900; color:#fbbf24; font-size:15px;">${t.depositBoxTitle}</span>
+                    <span class="tubedigest-net-badge">${t.depositNetwork}</span>
                 </div>
 
                 <div class="tubedigest-qr-wrapper">
                     <img src="https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=TZ565aUJX6hhFjmLekK7JZzv2S3wpgFVTZ" alt="USDT QR" class="tubedigest-qr-img">
                 </div>
 
-                <div style="font-size:13px; color:#cbd5e1; text-align:center;">
-                    مبلغ <b>4.99 USDT</b> را با اسکن کیوآرکد بالا یا به آدرس زیر در شبکه <b>TRC-20</b> واریز فرمایید:
+                <!-- 3-Step Clear Instruction Guide -->
+                <div class="tubedigest-steps-list">
+                    <div class="tubedigest-step-row">
+                        <span class="tubedigest-step-num">1</span>
+                        <span>${t.depositStep1}</span>
+                    </div>
+                    <div class="tubedigest-step-row">
+                        <span class="tubedigest-step-num">2</span>
+                        <span>${t.depositStep2}</span>
+                    </div>
+                    <div class="tubedigest-step-row">
+                        <span class="tubedigest-step-num">3</span>
+                        <span>${t.depositStep3}</span>
+                    </div>
                 </div>
 
                 <div class="tubedigest-wallet-container">
                     <span class="tubedigest-wallet-addr" id="td-wallet-address">TZ565aUJX6hhFjmLekK7JZzv2S3wpgFVTZ</span>
-                    <button id="td-copy-wallet-btn" class="tubedigest-wallet-copy-btn">📋 کپی آدرس</button>
+                    <button id="td-copy-wallet-btn" class="tubedigest-wallet-copy-btn">${t.copyWalletBtn}</button>
                 </div>
             </div>
 
             <!-- In-Page License Activation Form -->
             <div class="tubedigest-activation-container">
                 <div style="font-size: 14.5px; font-weight: 800; color: #f1f5f9; text-align: center;">
-                    پس از واریز یا در صورت داشتن لایسنس، اطلاعات را جهت فعالسازی آنی وارد فرمایید:
+                    ${t.activationTitle}
                 </div>
                 <div class="tubedigest-activation-inputs">
-                    <input type="email" id="td-inpage-email" class="tubedigest-activation-input" placeholder="ایمیل شما (مثال: user@gmail.com)">
-                    <input type="text" id="td-inpage-key" class="tubedigest-activation-input" placeholder="کد لایسنس یا هش تراکنش TxID">
-                    <button id="td-inpage-activate-btn" class="tubedigest-activation-submit-btn">✨ تایید و فعالسازی آنی</button>
+                    <input type="email" id="td-inpage-email" class="tubedigest-activation-input" placeholder="${t.emailPlaceholder}">
+                    <input type="text" id="td-inpage-key" class="tubedigest-activation-input" placeholder="${t.keyPlaceholder}">
+                    <button id="td-inpage-activate-btn" class="tubedigest-activation-submit-btn">${t.activateSubmitBtn}</button>
                 </div>
                 <div id="td-inpage-msg" class="tubedigest-act-msg"></div>
             </div>
         </div>
     `;
 
-    // Copy wallet button handler
     const copyWalletBtn = document.getElementById('td-copy-wallet-btn');
     if (copyWalletBtn) {
         copyWalletBtn.addEventListener('click', () => {
             navigator.clipboard.writeText('TZ565aUJX6hhFjmLekK7JZzv2S3wpgFVTZ').then(() => {
-                copyWalletBtn.innerText = '✅ کپی شد!';
-                setTimeout(() => { copyWalletBtn.innerText = '📋 کپی آدرس'; }, 1800);
+                copyWalletBtn.innerText = t.copiedWalletBtn;
+                setTimeout(() => { copyWalletBtn.innerText = t.copyWalletBtn; }, 1800);
             });
         });
     }
 
-    // Handle In-Page Activation
     const emailInput = document.getElementById('td-inpage-email');
     const keyInput = document.getElementById('td-inpage-key');
     const activateBtn = document.getElementById('td-inpage-activate-btn');
@@ -470,11 +575,13 @@ function renderPaywallLock(container, count, hwid) {
 
         if (!key) {
             msgEl.className = 'tubedigest-act-msg error';
-            msgEl.innerText = 'لطفاً کد لایسنس را وارد فرمایید.';
+            msgEl.innerText = selectedLanguage === 'en' 
+                ? 'Please enter your TxID or License Key.' 
+                : (selectedLanguage === 'ar' ? 'يرجى إدخال معرّف المعاملة أو رمز الترخيص.' : 'لطفاً کد لایسنس یا شناسه TxID را وارد فرمایید.');
             return;
         }
 
-        activateBtn.innerText = 'در حال بررسی...';
+        activateBtn.innerText = t.activateLoading;
         activateBtn.disabled = true;
 
         chrome.runtime.sendMessage({
@@ -483,14 +590,14 @@ function renderPaywallLock(container, count, hwid) {
             email: email,
             hwid: hwid
         }, (res) => {
-            activateBtn.innerText = 'فعالسازی آنی';
+            activateBtn.innerText = t.activateSubmitBtn;
             activateBtn.disabled = false;
 
             if (res && res.success) {
                 msgEl.className = 'tubedigest-act-msg success';
                 msgEl.innerText = res.message || '✅ لایسنس با موفقیت فعال شد!';
                 setTimeout(() => {
-                    createAndShowPanel(); // Re-render immediately into summary!
+                    createAndShowPanel();
                 }, 1200);
             } else {
                 msgEl.className = 'tubedigest-act-msg error';
@@ -501,29 +608,30 @@ function renderPaywallLock(container, count, hwid) {
 }
 
 function renderGeminiResult(container, data, isPro, currentUsageCount) {
+    const t = getT();
 
     container.innerHTML = `
         <!-- 1. The Big Takeaway (Golden Highlight Box) -->
         <div class="tubedigest-conclusion-box">
-            <div class="tubedigest-conclusion-title">👑 پیام نهایی و مغز کلام ویدیو (THE BIG TAKEAWAY)</div>
+            <div class="tubedigest-conclusion-title">${t.secConclusion}</div>
             <div class="tubedigest-conclusion-text">${data.conclusion}</div>
         </div>
 
         <!-- 2. 30-Second Quick Takeaway -->
         <div class="tubedigest-takeaway">
-            <div class="tubedigest-takeaway-title">⚡ خلاصه فشرده و اجرایی ۳۰ ثانیه‌ای</div>
+            <div class="tubedigest-takeaway-title">${t.secTakeaway}</div>
             <div class="tubedigest-takeaway-text">${data.takeaway}</div>
         </div>
 
         <!-- 3. Key Highlights & Turning Points -->
-        <div class="tubedigest-sec-title">📌 مهم‌ترین نکات کلیدی و استدلال‌های مطرح‌شده گوینده</div>
+        <div class="tubedigest-sec-title">${t.secHighlights}</div>
         <ul class="tubedigest-bullets">
             ${data.highlights.map(h => `<li><span style="color:#ff0055; font-weight:bold; margin-left:10px;">✦</span>${h}</li>`).join('')}
         </ul>
 
         <!-- 4. Actionable Lessons -->
         ${data.lessons && data.lessons.length > 0 ? `
-            <div class="tubedigest-sec-title">💡 درس‌ها و پیام‌های کاربردی برای بیننده</div>
+            <div class="tubedigest-sec-title">${t.secLessons}</div>
             <ul class="tubedigest-bullets">
                 ${data.lessons.map(l => `<li><span style="color:#10b981; font-weight:bold; margin-left:10px;">✔</span>${l}</li>`).join('')}
             </ul>
@@ -531,7 +639,7 @@ function renderGeminiResult(container, data, isPro, currentUsageCount) {
 
         <!-- 5. Interactive Timeline -->
         ${data.timeline && data.timeline.length > 0 ? `
-            <div class="tubedigest-sec-title">⏱️ نشانه‌گذاری‌های زمانی و مباحث مطرح‌شده (پرش با کلیک)</div>
+            <div class="tubedigest-sec-title">${t.secTimeline}</div>
             <div class="tubedigest-timeline">
                 ${data.timeline.map(item => `
                     <div class="tubedigest-time-item">
@@ -542,14 +650,14 @@ function renderGeminiResult(container, data, isPro, currentUsageCount) {
             </div>
         ` : ''}
 
-        <!-- Action Bar: Copy & Sellix -->
+        <!-- Action Bar: Copy & Upgrade -->
         <div class="tubedigest-footer-bar">
             <button id="td-real-copy-btn" class="tubedigest-copy-btn">
-                📋 ${selectedLanguage === 'fa' ? 'کپی خلاصه محتوی ویدیو' : (selectedLanguage === 'ar' ? 'نسخ ملخص ومحتوى الفيديو' : 'Copy Video Summary & Content')}
+                ${t.copySummaryBtn}
             </button>
             ${!isPro ? `
                 <button id="td-show-pay-btn" class="tubedigest-upgrade-link" style="background:none; border:none; cursor:pointer;">
-                    👑 ارتقا به نسخه Pro نامحدود با تتر ↗
+                    ${t.upgradeLink}
                 </button>
             ` : ''}
         </div>
@@ -564,14 +672,12 @@ function renderGeminiResult(container, data, isPro, currentUsageCount) {
     }
 
     document.getElementById('td-real-copy-btn').addEventListener('click', () => {
-        const textToCopy = `✨ خلاصه و تحلیل ویدیو\n\n👑 پیام نهایی و مغز کلام:\n${data.conclusion}\n\n⚡ خلاصه ۳۰ ثانیه‌ای:\n${data.takeaway}\n\n📌 نکات کلیدی:\n${data.highlights.join('\n')}`;
-        const copyDefaultLabel = selectedLanguage === 'fa' ? '📋 کپی خلاصه محتوی ویدیو' : (selectedLanguage === 'ar' ? 'نسخ ملخص ومحتوى الفيديو' : 'Copy Video Summary & Content');
-        const copiedLabel = selectedLanguage === 'fa' ? '✅ با موفقیت کپی شد!' : (selectedLanguage === 'ar' ? '✅ تم النسخ بنجاح!' : '✅ Copied to clipboard!');
+        const textToCopy = `${t.appTitle}\n\n${t.secConclusion}\n${data.conclusion}\n\n${t.secTakeaway}\n${data.takeaway}\n\n${t.secHighlights}\n${data.highlights.join('\n')}`;
 
         navigator.clipboard.writeText(textToCopy).then(() => {
             const btn = document.getElementById('td-real-copy-btn');
-            btn.innerText = copiedLabel;
-            setTimeout(() => { btn.innerText = copyDefaultLabel; }, 1800);
+            btn.innerText = t.copiedSummaryBtn;
+            setTimeout(() => { btn.innerText = t.copySummaryBtn; }, 1800);
         });
     });
 

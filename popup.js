@@ -1,8 +1,52 @@
-// TubeDigest AI - Popup Script 4.0 (Anti-Piracy Device Binding)
+// TubeDigest AI - Popup Script 4.0 (Full i18n & Anti-Piracy Device Binding)
+
+const POPUP_I18N = {
+    fa: {
+        statusActive: 'موتور شناختی فعال',
+        statusPro: 'نسخه Pro دائمی',
+        unlimited: 'دسترسی نامحدود 👑',
+        usageText: '{n} از ۳ استفاده شده',
+        saveBtn: 'ذخیره',
+        activateBtn: 'فعالسازی',
+        savedSuccess: '✅ با موفقیت ذخیره شد!',
+        readyMsg: '✅ موتور شناختی آماده فعالیت است',
+        copiedWallet: '✅ کپی شد!',
+        copyBtn: '📋 کپی',
+        licenseActive: 'لایسنس فعال است',
+        verifying: 'در حال بررسی...'
+    },
+    en: {
+        statusActive: 'Neural Engine Active',
+        statusPro: 'Lifetime Pro Active',
+        unlimited: 'Unlimited Access 👑',
+        usageText: '{n} of 3 free used',
+        saveBtn: 'Save',
+        activateBtn: 'Activate',
+        savedSuccess: '✅ Saved successfully!',
+        readyMsg: '✅ Cognitive Engine is Ready',
+        copiedWallet: '✅ Copied!',
+        copyBtn: '📋 Copy',
+        licenseActive: 'License is Active',
+        verifying: 'Verifying...'
+    },
+    ar: {
+        statusActive: 'المحرك المعرفي نشط',
+        statusPro: 'باقة Pro مدى الحياة',
+        unlimited: 'وصول غير محدود 👑',
+        usageText: 'تم استهلاك {n} من ٣',
+        saveBtn: 'حفظ',
+        activateBtn: 'تفعيل',
+        savedSuccess: '✅ تم الحفظ بنجاح!',
+        readyMsg: '✅ المحرك الذكي جاهز للعمل',
+        copiedWallet: '✅ تم النسخ!',
+        copyBtn: '📋 نسخ',
+        licenseActive: 'الترخيص نشط',
+        verifying: 'جارٍ التحقق...'
+    }
+};
 
 document.addEventListener('DOMContentLoaded', async () => {
     const statusBadge = document.getElementById('statusBadge');
-    const buyLink = document.getElementById('buyLink');
     const licenseEmailInput = document.getElementById('licenseEmailInput');
     const licenseKeyInput = document.getElementById('licenseKeyInput');
     const activateBtn = document.getElementById('activateBtn');
@@ -13,8 +57,34 @@ document.addEventListener('DOMContentLoaded', async () => {
     const geminiApiKeyInput = document.getElementById('geminiApiKeyInput');
     const saveApiKeyBtn = document.getElementById('saveApiKeyBtn');
     const apiMsg = document.getElementById('apiMsg');
+    const copyPopupWalletBtn = document.getElementById('copyPopupWalletBtn');
 
+    let currentLang = 'fa';
     const hwid = await getOrCreateHWID();
+
+    function getT() {
+        return POPUP_I18N[currentLang] || POPUP_I18N.fa;
+    }
+
+    function applyI18n(isPro, count) {
+        const t = getT();
+        const isRtl = currentLang === 'fa' || currentLang === 'ar';
+        document.documentElement.dir = isRtl ? 'rtl' : 'ltr';
+        document.documentElement.lang = currentLang;
+
+        if (isPro) {
+            statusBadge.innerText = t.statusPro;
+            usagePill.innerText = t.unlimited;
+        } else {
+            statusBadge.innerText = t.statusActive;
+            usagePill.innerText = t.usageText.replace('{n}', count);
+            if (count >= 3) usagePill.style.color = '#ef4444';
+        }
+
+        if (saveApiKeyBtn) saveApiKeyBtn.innerText = t.saveBtn;
+        if (activateBtn) activateBtn.innerText = t.activateBtn;
+        if (copyPopupWalletBtn) copyPopupWalletBtn.innerText = t.copyBtn;
+    }
 
     // Load Pro Status, Language & API Key from Chrome Storage
     chrome.storage.local.get([
@@ -27,25 +97,22 @@ document.addEventListener('DOMContentLoaded', async () => {
     ], (result) => {
         const isPro = result.tubedigest_pro === true && (result.tubedigest_bound_hwid === hwid || result.tubedigest_bound_hwid === 'ALL');
         const count = Number(result.tubedigest_free_count) || 0;
+        currentLang = result.tubedigest_lang || 'fa';
+
+        applyI18n(isPro, count);
 
         if (isPro) {
             setProUI(result.tubedigest_bound_email);
-        } else {
-            usagePill.innerText = `${count} از ۳ استفاده شده`;
-            if (count >= 3) {
-                usagePill.style.color = '#ef4444';
-            }
         }
 
         if (result.gemini_api_key) {
             geminiApiKeyInput.value = result.gemini_api_key;
             apiMsg.className = 'msg success';
-            apiMsg.innerText = '✅ موتور شناختی آماده فعالیت است';
+            apiMsg.innerText = getT().readyMsg;
         }
 
-        const savedLang = result.tubedigest_lang || 'fa';
         langBtns.forEach(btn => {
-            if (btn.dataset.lang === savedLang) {
+            if (btn.dataset.lang === currentLang) {
                 btn.classList.add('active');
             } else {
                 btn.classList.remove('active');
@@ -58,14 +125,15 @@ document.addEventListener('DOMContentLoaded', async () => {
         const key = geminiApiKeyInput.value.trim();
         if (!key) {
             apiMsg.className = 'msg error';
-            apiMsg.innerText = 'لطفاً کلید معتبر وارد فرمایید.';
+            apiMsg.innerText = currentLang === 'en' ? 'Please enter a valid key.' : 'لطفاً کلید معتبر وارد فرمایید.';
             return;
         }
 
         chrome.storage.local.set({ gemini_api_key: key }, () => {
+            const t = getT();
             apiMsg.className = 'msg success';
-            apiMsg.innerText = '✅ کلید با موفقیت ذخیره شد!';
-            setTimeout(() => { apiMsg.innerText = '✅ موتور شناختی آماده فعالیت است'; }, 2000);
+            apiMsg.innerText = t.savedSuccess;
+            setTimeout(() => { apiMsg.innerText = t.readyMsg; }, 2000);
         });
     });
 
@@ -74,8 +142,11 @@ document.addEventListener('DOMContentLoaded', async () => {
         btn.addEventListener('click', () => {
             langBtns.forEach(b => b.classList.remove('active'));
             btn.classList.add('active');
-            const newLang = btn.dataset.lang;
-            chrome.storage.local.set({ tubedigest_lang: newLang });
+            currentLang = btn.dataset.lang;
+            chrome.storage.local.set({ tubedigest_lang: currentLang });
+            chrome.storage.local.get(['tubedigest_pro', 'tubedigest_free_count'], (res) => {
+                applyI18n(res.tubedigest_pro === true, Number(res.tubedigest_free_count) || 0);
+            });
         });
     });
 
@@ -83,14 +154,15 @@ document.addEventListener('DOMContentLoaded', async () => {
     activateBtn.addEventListener('click', () => {
         const key = licenseKeyInput.value.trim().toUpperCase();
         const email = (licenseEmailInput ? licenseEmailInput.value.trim() : '');
+        const t = getT();
 
         if (!key) {
             licenseMsg.className = 'msg error';
-            licenseMsg.innerText = 'لطفاً کد لایسنس را وارد فرمایید.';
+            licenseMsg.innerText = currentLang === 'en' ? 'Please enter license key.' : 'لطفاً کد لایسنس را وارد فرمایید.';
             return;
         }
 
-        activateBtn.innerText = 'در حال بررسی...';
+        activateBtn.innerText = t.verifying;
         activateBtn.disabled = true;
 
         chrome.runtime.sendMessage({
@@ -99,40 +171,41 @@ document.addEventListener('DOMContentLoaded', async () => {
             email: email,
             hwid: hwid
         }, (res) => {
-            activateBtn.innerText = 'فعالسازی';
+            activateBtn.innerText = t.activateBtn;
             activateBtn.disabled = false;
 
             if (res && res.success) {
                 setProUI(email);
                 licenseMsg.className = 'msg success';
-                licenseMsg.innerText = res.message || '✅ نسخه Pro دائمی فعال شد!';
+                licenseMsg.innerText = res.message || '✅ Pro Activated!';
             } else {
                 licenseMsg.className = 'msg error';
-                licenseMsg.innerText = res ? res.error : '❌ کد لایسنس نامعتبر است.';
+                licenseMsg.innerText = res ? res.error : '❌ Invalid License Key.';
             }
         });
     });
 
-    const copyPopupWalletBtn = document.getElementById('copyPopupWalletBtn');
     if (copyPopupWalletBtn) {
         copyPopupWalletBtn.addEventListener('click', () => {
+            const t = getT();
             navigator.clipboard.writeText('TZ565aUJX6hhFjmLekK7JZzv2S3wpgFVTZ').then(() => {
-                copyPopupWalletBtn.innerText = '✅ کپی شد!';
-                setTimeout(() => { copyPopupWalletBtn.innerText = '📋 کپی'; }, 1800);
+                copyPopupWalletBtn.innerText = t.copiedWallet;
+                setTimeout(() => { copyPopupWalletBtn.innerText = t.copyBtn; }, 1800);
             });
         });
     }
 
     function setProUI(email) {
-        statusBadge.innerText = 'نسخه Pro دائمی';
+        const t = getT();
+        statusBadge.innerText = t.statusPro;
         statusBadge.style.color = '#34d399';
         statusBadge.style.borderColor = 'rgba(52, 211, 153, 0.5)';
         statusBadge.style.background = 'rgba(16, 185, 129, 0.2)';
         const usdtCard = document.getElementById('usdtCard');
         if (usdtCard) usdtCard.style.display = 'none';
-        usagePill.innerText = 'دسترسی نامحدود 👑';
+        usagePill.innerText = t.unlimited;
         usagePill.style.color = '#34d399';
-        if (licenseKeyInput) licenseKeyInput.placeholder = 'لایسنس فعال است';
+        if (licenseKeyInput) licenseKeyInput.placeholder = t.licenseActive;
     }
 
     async function getOrCreateHWID() {
