@@ -113,12 +113,23 @@ document.addEventListener('DOMContentLoaded', async () => {
         });
     });
 
+    const copyPopupWalletBtn = document.getElementById('copyPopupWalletBtn');
+    if (copyPopupWalletBtn) {
+        copyPopupWalletBtn.addEventListener('click', () => {
+            navigator.clipboard.writeText('TZ565aUJX6hhFjmLekK7JZzv2S3wpgFVTZ').then(() => {
+                copyPopupWalletBtn.innerText = '✅ کپی شد!';
+                setTimeout(() => { copyPopupWalletBtn.innerText = '📋 کپی'; }, 1800);
+            });
+        });
+    }
+
     function setProUI(email) {
         statusBadge.innerText = 'نسخه Pro دائمی';
         statusBadge.style.color = '#34d399';
         statusBadge.style.borderColor = 'rgba(52, 211, 153, 0.5)';
         statusBadge.style.background = 'rgba(16, 185, 129, 0.2)';
-        buyLink.style.display = 'none';
+        const usdtCard = document.getElementById('usdtCard');
+        if (usdtCard) usdtCard.style.display = 'none';
         usagePill.innerText = 'دسترسی نامحدود 👑';
         usagePill.style.color = '#34d399';
         if (licenseKeyInput) licenseKeyInput.placeholder = 'لایسنس فعال است';

@@ -257,10 +257,23 @@
         <div id="licenseMsg" class="msg"></div>
     </div>
 
-    <!-- Buy Link (Sellix) -->
-    <a href="https://sellix.io" target="_blank" class="btn-primary-gradient" id="buyLink">
-        <span>خرید لایسنس دائمی با تتر (4.99 USDT)</span>
-    </a>
+    <!-- Direct USDT (TRC-20) Payment Card in Popup -->
+    <div class="card" id="usdtCard" style="border-color: rgba(245, 158, 11, 0.45); text-align: center;">
+        <div class="card-header" style="justify-content: space-between;">
+            <span style="color:#fbbf24;">💎 واریز مستقیم تتر (4.99 USDT):</span>
+            <span style="background:linear-gradient(135deg, #ef4444 0%, #b91c1c 100%); color:#fff; font-size:10px; font-weight:900; padding:2px 8px; border-radius:10px;">TRC-20</span>
+        </div>
+        <div style="margin: 8px 0; display:flex; justify-content:center;">
+            <img src="https://api.qrserver.com/v1/create-qr-code/?size=110x110&data=TZ565aUJX6hhFjmLekK7JZzv2S3wpgFVTZ" alt="USDT QR" style="width:110px; height:110px; border-radius:10px; background:#fff; padding:5px; box-shadow:0 0 15px rgba(245,158,11,0.3);">
+        </div>
+        <div style="font-size:11px; color:#cbd5e1; margin-bottom:8px;">
+            آدرس ولت تتر شبکه ترون:
+        </div>
+        <div style="display:flex; align-items:center; gap:6px; background:#020617; border:1px solid #334155; border-radius:10px; padding:6px 8px;">
+            <span style="font-size:11px; color:#38bdf8; font-family:monospace; flex:1; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; direction:ltr;">TZ565aUJX6hhFjmLekK7JZzv2S3wpgFVTZ</span>
+            <button id="copyPopupWalletBtn" class="btn-action" style="padding:4px 10px; font-size:11px;">📋 کپی</button>
+        </div>
+    </div>
 
     <div class="footer">
         سیستم تحلیل فوق‌پیشرفته و موتور پردازش شناختی TubeDigest AI

@@ -411,25 +411,52 @@ function renderPaywallLock(container, count, hwid) {
                 <div class="tubedigest-paywall-feature-item">✔ فعال‌سازی دائمی و بدون اشتراک ماهانه</div>
             </div>
 
-            <!-- Sellix Checkout Button -->
-            <a href="https://sellix.io" target="_blank" class="tubedigest-paywall-buy-btn">
-                👑 خرید لایسنس دائمی با تتر (4.99 USDT)
-            </a>
+            <!-- Direct USDT Gateway Box -->
+            <div class="tubedigest-direct-pay-box">
+                <div style="display:flex; align-items:center; justify-content:space-between; width:100%; border-bottom:1px solid rgba(255,255,255,0.1); padding-bottom:10px;">
+                    <span style="font-weight:900; color:#fbbf24; font-size:15px;">👑 واریز مستقیم ۴.۹۹ تتر (USDT)</span>
+                    <span class="tubedigest-net-badge">TRON (TRC-20)</span>
+                </div>
+
+                <div class="tubedigest-qr-wrapper">
+                    <img src="https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=TZ565aUJX6hhFjmLekK7JZzv2S3wpgFVTZ" alt="USDT QR" class="tubedigest-qr-img">
+                </div>
+
+                <div style="font-size:13px; color:#cbd5e1; text-align:center;">
+                    مبلغ <b>4.99 USDT</b> را با اسکن کیوآرکد بالا یا به آدرس زیر در شبکه <b>TRC-20</b> واریز فرمایید:
+                </div>
+
+                <div class="tubedigest-wallet-container">
+                    <span class="tubedigest-wallet-addr" id="td-wallet-address">TZ565aUJX6hhFjmLekK7JZzv2S3wpgFVTZ</span>
+                    <button id="td-copy-wallet-btn" class="tubedigest-wallet-copy-btn">📋 کپی آدرس</button>
+                </div>
+            </div>
 
             <!-- In-Page License Activation Form -->
             <div class="tubedigest-activation-container">
                 <div style="font-size: 14.5px; font-weight: 800; color: #f1f5f9; text-align: center;">
-                    کد لایسنس خریداری‌شده دارید؟ در کادر زیر فعال کنید:
+                    پس از واریز یا در صورت داشتن لایسنس، اطلاعات را جهت فعالسازی آنی وارد فرمایید:
                 </div>
                 <div class="tubedigest-activation-inputs">
-                    <input type="email" id="td-inpage-email" class="tubedigest-activation-input" placeholder="ایمیل خرید (مثال: user@gmail.com)">
-                    <input type="text" id="td-inpage-key" class="tubedigest-activation-input" placeholder="کد لایسنس (مثال: PRO-XXXX-XXXX)">
-                    <button id="td-inpage-activate-btn" class="tubedigest-activation-submit-btn">فعالسازی آنی</button>
+                    <input type="email" id="td-inpage-email" class="tubedigest-activation-input" placeholder="ایمیل شما (مثال: user@gmail.com)">
+                    <input type="text" id="td-inpage-key" class="tubedigest-activation-input" placeholder="کد لایسنس یا هش تراکنش TxID">
+                    <button id="td-inpage-activate-btn" class="tubedigest-activation-submit-btn">✨ تایید و فعالسازی آنی</button>
                 </div>
                 <div id="td-inpage-msg" class="tubedigest-act-msg"></div>
             </div>
         </div>
     `;
+
+    // Copy wallet button handler
+    const copyWalletBtn = document.getElementById('td-copy-wallet-btn');
+    if (copyWalletBtn) {
+        copyWalletBtn.addEventListener('click', () => {
+            navigator.clipboard.writeText('TZ565aUJX6hhFjmLekK7JZzv2S3wpgFVTZ').then(() => {
+                copyWalletBtn.innerText = '✅ کپی شد!';
+                setTimeout(() => { copyWalletBtn.innerText = '📋 کپی آدرس'; }, 1800);
+            });
+        });
+    }
 
     // Handle In-Page Activation
     const emailInput = document.getElementById('td-inpage-email');
@@ -521,12 +548,20 @@ function renderGeminiResult(container, data, isPro, currentUsageCount) {
                 📋 ${selectedLanguage === 'fa' ? 'کپی خلاصه محتوی ویدیو' : (selectedLanguage === 'ar' ? 'نسخ ملخص ومحتوى الفيديو' : 'Copy Video Summary & Content')}
             </button>
             ${!isPro ? `
-                <a href="https://sellix.io" target="_blank" class="tubedigest-upgrade-link">
-                    👑 ارتقا به نسخه Pro نامحدود در Sellix ↗
-                </a>
+                <button id="td-show-pay-btn" class="tubedigest-upgrade-link" style="background:none; border:none; cursor:pointer;">
+                    👑 ارتقا به نسخه Pro نامحدود با تتر ↗
+                </button>
             ` : ''}
         </div>
     `;
+
+    const showPayBtn = document.getElementById('td-show-pay-btn');
+    if (showPayBtn) {
+        showPayBtn.addEventListener('click', async () => {
+            const hwid = await getOrCreateHWID();
+            renderPaywallLock(container, 3, hwid);
+        });
+    }
 
     document.getElementById('td-real-copy-btn').addEventListener('click', () => {
         const textToCopy = `✨ خلاصه و تحلیل ویدیو\n\n👑 پیام نهایی و مغز کلام:\n${data.conclusion}\n\n⚡ خلاصه ۳۰ ثانیه‌ای:\n${data.takeaway}\n\n📌 نکات کلیدی:\n${data.highlights.join('\n')}`;
