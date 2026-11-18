@@ -1,0 +1,9 @@
+# Dependencies and OS files
+Thumbs.db
+desktop.ini
+.DS_Store
+*.log
+
+# Build archives
+*.zip
+*.crx

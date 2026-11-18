@@ -1,0 +1,41 @@
+{
+  "manifest_version": 3,
+  "name": "TubeDigest AI - خلاصه‌ساز هوشمند ویدیوهای یوتیوب",
+  "version": "4.0.0",
+  "description": "خلاصه‌ساز فوق‌پیشرفته و هوشمند ویدیوهای یوتیوب با موتور پردازش شناختی TubeDigest AI",
+  "permissions": [
+    "storage"
+  ],
+  "host_permissions": [
+    "*://*.youtube.com/*",
+    "*://youtube.com/*",
+    "https://generativelanguage.googleapis.com/*",
+    "https://translate.googleapis.com/*",
+    "https://api.ipify.org/*"
+  ],
+  "background": {
+    "service_worker": "background.js"
+  },
+  "action": {
+    "default_popup": "popup.html",
+    "default_title": "تنظیمات و وضعیت TubeDigest AI"
+  },
+  "content_scripts": [
+    {
+      "matches": [
+        "*://*.youtube.com/*",
+        "*://youtube.com/*"
+      ],
+      "js": [
+        "content.js"
+      ],
+      "css": [
+        "styles.css"
+      ],
+      "run_at": "document_idle"
+    }
+  ],
+  "icons": {
+    "128": "icon.png"
+  }
+}
